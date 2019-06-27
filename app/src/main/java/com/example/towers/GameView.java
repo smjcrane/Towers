@@ -75,4 +75,8 @@ public class GameView extends View implements Game.GameEventListener {
             drawTower(canvas, i, game.getTowerAt(i));
         }
     }
+
+    public int whichTowerWasClicked(int touchX){
+        return (int) (touchX / blockWidth / 2);
+    }
 }
