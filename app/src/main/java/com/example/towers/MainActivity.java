@@ -3,7 +3,6 @@ package com.example.towers;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -32,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         gameView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN){
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     touchX = (int) event.getX();
                     touchY = (int) event.getY();
                 }
@@ -45,8 +44,16 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 v = (GameView) v;
                 Block.Color color = Block.Color.values()[random.nextInt(Block.Color.values().length)];
-                int tower = ((GameView) v).whichTowerWasClicked(touchX);
-                game.play(new TowerSegment(color), tower);
+                GameView.GameClickEvent event = ((GameView) v).whichTowerWasClicked(touchX);
+                if (event == null) {
+                    return;
+                }
+                if (event.type == GameView.GameClickEvent.ClickType.Simple){
+                    game.play(new TowerSegment(color), event.towerNumber);
+                } else {
+                    Log.d("MAIN", event.bridgeEnd + " " + event.bridgeStart);
+                    game.play(new Bridge(color), event.bridgeStart, event.bridgeEnd);
+                }
             }
         });
 
@@ -56,8 +63,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 int t = random.nextInt(4);
                 Block.Color color = Block.Color.values()[random.nextInt(Block.Color.values().length)];
-                game.play(new TowerSegment(color), t);
-                Log.d("MAIN", "\n"+game.toString());
+                boolean bridge = random.nextInt(5) == 1;
+                if (bridge) {
+                    game.play(new Bridge(color), t, t + 1 % 4);
+                } else {
+                    game.play(new TowerSegment(color), t);
+                }
+                Log.d("MAIN", "\n" + game.toString());
             }
         });
     }

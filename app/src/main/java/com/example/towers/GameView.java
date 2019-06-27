@@ -56,7 +56,11 @@ public class GameView extends View implements Game.GameEventListener {
     }
 
     private void drawBlock(Canvas canvas, int x, int y, Block block){
-        canvas.drawRect(x, viewHeight - y - blockHeight, x+blockWidth, viewHeight - y, blockColors.get(block.color));
+        if (block instanceof TowerSegment){
+            canvas.drawRect(x, viewHeight - y - blockHeight, x+blockWidth, viewHeight - y, blockColors.get(block.color));
+        } else if (block instanceof Bridge){
+            canvas.drawRect((int) (x - blockWidth / 2), viewHeight - y - blockHeight, (int) (x+blockWidth * 1.5) + 1, viewHeight - y, blockColors.get(block.color));
+        }
     }
 
     private void drawTower(Canvas canvas, int index, Tower tower){
@@ -76,7 +80,35 @@ public class GameView extends View implements Game.GameEventListener {
         }
     }
 
-    public int whichTowerWasClicked(int touchX){
-        return (int) (touchX / blockWidth / 2);
+    public GameClickEvent whichTowerWasClicked(int touchX){
+        GameClickEvent g = new GameClickEvent();
+
+        int strip = 2 * touchX / blockWidth;
+        if (strip == 0 || strip == 2 * game.getNumTowers()){
+            return null;
+        }
+        Log.d("VIEW", "s: " + strip + ", X: "+ touchX);
+
+        if (strip % 4 == 0 || strip % 4 == 3){
+            g.type = GameClickEvent.ClickType.Bridge;
+            g.bridgeStart = (strip - 1) / 4;
+            g.bridgeEnd = g.bridgeStart + 1;
+        } else {
+            g.type = GameClickEvent.ClickType.Simple;
+            g.towerNumber = strip / 4;
+        }
+        return g;
+    }
+
+    static class GameClickEvent {
+
+        public enum ClickType {
+            Simple, Bridge
+        }
+
+        public ClickType type;
+        public int towerNumber;
+        public int bridgeStart;
+        public int bridgeEnd;
     }
 }
