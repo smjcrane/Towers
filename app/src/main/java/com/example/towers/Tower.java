@@ -17,6 +17,10 @@ public class Tower {
         return this.blocks.get(index);
     }
 
+    public Block getTop(){
+        return blocks.get(blocks.size() - 1);
+    }
+
     public void addBlock(Block block) {
         this.blocks.add(block);
     }

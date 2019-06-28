@@ -58,12 +58,16 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 if (event.type == GameView.GameClickEvent.ClickType.Simple){
-                    game.play(new TowerSegment(color), event.towerNumber);
+                    if (game.play(new TowerSegment(color), event.towerNumber)){
+                        whatsNext.playSelected();
+                        whatsNext.deselect();
+                    }
                 } else {
-                    game.play(new Bridge(color), event.bridgeStart, event.bridgeEnd);
+                    if(game.play(new Bridge(color), event.bridgeStart, event.bridgeEnd)){
+                        whatsNext.playSelected();
+                        whatsNext.deselect();
+                    }
                 }
-                whatsNext.playSelected();
-                whatsNext.deselect();
             }
         });
 

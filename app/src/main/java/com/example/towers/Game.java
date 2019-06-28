@@ -23,7 +23,11 @@ public class Game {
     }
 
     public boolean play(TowerSegment t, int i){
-        this.towers.get(i).addBlock(t);
+        Tower tower = towers.get(i);
+        if (tower.getHeight() > 0 && tower.getTop().color == t.color){
+            return false;
+        }
+        tower.addBlock(t);
         onStateChanged();
         return true;
     }
@@ -34,7 +38,17 @@ public class Game {
         }
         Tower t1 = this.towers.get(i1);
         Tower t2 = this.towers.get(i2);
-        if (t1.getHeight() != t2.getHeight()){
+        int height = t1.getHeight();
+        if (height == 0){
+            return false;
+        }
+        if (height != t2.getHeight()){
+            return false;
+        }
+        if (t1.getTop() instanceof Bridge || t2.getTop() instanceof Bridge){
+            return false;
+        }
+        if (t1.getTop().color == b.color || t2.getTop().color == b.color){
             return false;
         }
         t1.addBlock(b);
