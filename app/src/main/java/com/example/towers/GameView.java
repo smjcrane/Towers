@@ -87,7 +87,6 @@ public class GameView extends View implements Game.GameEventListener {
         if (strip == 0 || strip == 2 * game.getNumTowers()){
             return null;
         }
-        Log.d("VIEW", "s: " + strip + ", X: "+ touchX);
 
         if (strip % 4 == 0 || strip % 4 == 3){
             g.type = GameClickEvent.ClickType.Bridge;

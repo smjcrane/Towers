@@ -1,5 +1,7 @@
 package com.example.towers;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,12 +19,16 @@ public class MainActivity extends AppCompatActivity {
 
     private int touchX, touchY;
 
+    private boolean gameInProgress;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         random = new Random();
+
+        gameInProgress = false;
 
         game = new Game(4);
         gameView = findViewById(R.id.game);
@@ -42,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
         gameView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!gameInProgress) {
+                    return;
+                }
                 v = (GameView) v;
                 Block.Color color = Block.Color.values()[random.nextInt(Block.Color.values().length)];
                 GameView.GameClickEvent event = ((GameView) v).whichTowerWasClicked(touchX);
@@ -51,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
                 if (event.type == GameView.GameClickEvent.ClickType.Simple){
                     game.play(new TowerSegment(color), event.towerNumber);
                 } else {
-                    Log.d("MAIN", event.bridgeEnd + " " + event.bridgeStart);
                     game.play(new Bridge(color), event.bridgeStart, event.bridgeEnd);
                 }
             }
@@ -61,15 +69,21 @@ public class MainActivity extends AppCompatActivity {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int t = random.nextInt(4);
-                Block.Color color = Block.Color.values()[random.nextInt(Block.Color.values().length)];
-                boolean bridge = random.nextInt(5) == 1;
-                if (bridge) {
-                    game.play(new Bridge(color), t, t + 1 % 4);
-                } else {
-                    game.play(new TowerSegment(color), t);
-                }
-                Log.d("MAIN", "\n" + game.toString());
+                int animationDuration = getResources().getInteger(
+                        android.R.integer.config_longAnimTime
+
+                );
+
+                startButton.animate()
+                        .alpha(0f)
+                        .setDuration(animationDuration)
+                        .setListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                startButton.setVisibility(View.GONE);
+                                gameInProgress = true;
+                            }
+                        });
             }
         });
     }
