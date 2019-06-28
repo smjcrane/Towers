@@ -4,20 +4,20 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
     private Game game;
     private GameView gameView;
 
-    private Button startButton;
-    private Random random;
+    private WhatsNext whatsNext;
+    private WhatsNextView whatsNextView;
 
-    private int touchX, touchY;
+    private Button startButton;
+
+    private int touchGameX, touchGameY, touchNextX, touchNextY;
 
     private boolean gameInProgress;
 
@@ -25,8 +25,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        random = new Random();
 
         gameInProgress = false;
 
@@ -38,8 +36,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    touchX = (int) event.getX();
-                    touchY = (int) event.getY();
+                    touchGameX = (int) event.getX();
+                    touchGameY = (int) event.getY();
                 }
                 return false;
             }
@@ -51,9 +49,11 @@ public class MainActivity extends AppCompatActivity {
                 if (!gameInProgress) {
                     return;
                 }
-                v = (GameView) v;
-                Block.Color color = Block.Color.values()[random.nextInt(Block.Color.values().length)];
-                GameView.GameClickEvent event = ((GameView) v).whichTowerWasClicked(touchX);
+                Block.Color color = whatsNext.getSelectedColor();
+                if (color == null){
+                    return;
+                }
+                GameView.GameClickEvent event = ((GameView) v).whichTowerWasClicked(touchGameX);
                 if (event == null) {
                     return;
                 }
@@ -62,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     game.play(new Bridge(color), event.bridgeStart, event.bridgeEnd);
                 }
+                whatsNext.playSelected();
+                whatsNext.deselect();
             }
         });
 
@@ -84,6 +86,36 @@ public class MainActivity extends AppCompatActivity {
                                 gameInProgress = true;
                             }
                         });
+            }
+        });
+
+        whatsNext = new WhatsNext();
+        whatsNextView = findViewById(R.id.whatsNext);
+        whatsNextView.setWhatsNext(whatsNext);
+
+        whatsNextView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    touchNextX = (int) event.getX();
+                    touchNextY = (int) event.getY();
+                }
+                return false;
+            }
+        });
+
+        whatsNextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!gameInProgress) {
+                    return;
+                }
+                int selected = whatsNextView.whatWasSelected(touchNextX);
+                if (selected == WhatsNext.NONE){
+                    whatsNext.deselect();
+                } else {
+                    whatsNext.select(selected);
+                }
             }
         });
     }
